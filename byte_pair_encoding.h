@@ -25,27 +25,29 @@
 #include <unordered_set>
 #include <vector>
 
-class PCRERegex;
+namespace tiktoken
+{
 
 class BytePairEncodingCore {
     bpe_encoding_t byte_pair_ranks_;
-    std::unordered_map<std::string, int> special_token_mappings_;
+    tt_stl::unordered_map<tt_stl::string, int> special_token_mappings_;
     PCRERegex pattern_string_;
 
-    static std::vector<int> byte_pair_merge(const std::vector<uint8_t> &piece,
+    static tt_stl::vector<int> byte_pair_merge(const tt_stl::vector<uint8_t> &piece,
         const bpe_encoding_t &ranks,
         const std::function<int(int, int)> &f);
 
 public:
     BytePairEncodingCore(bpe_encoding_t&& byte_pair_ranks,
-        std::unordered_map<std::string, int>&& special_token_mappings,
+        tt_stl::unordered_map<tt_stl::string, int>&& special_token_mappings,
         PCRERegex&& pattern_string);
 
-    std::pair<std::vector<int>, std::vector<int>> encode_native(const std::string &line_to_encode,
-        const std::unordered_set<std::string> &allowed_special);
-    std::string decode_native(const std::vector<int> &input_tokens_to_decode);
-    std::vector<std::string> break_into_specials(std::string const& line_to_encode, const std::unordered_set<std::string> &allowed_special);
+    std::pair<tt_stl::vector<int>, tt_stl::vector<int>> encode_native(const tt_stl::string &line_to_encode,
+        const tt_stl::unordered_set<tt_stl::string> &allowed_special);
+    tt_stl::string decode_native(const tt_stl::vector<int> &input_tokens_to_decode);
+    tt_stl::vector<tt_stl::string> break_into_specials(tt_stl::string const& line_to_encode, const tt_stl::unordered_set<tt_stl::string> &allowed_special);
 
     [[nodiscard]] const bpe_encoding_t& getBytePairRanks() const { return byte_pair_ranks_; }
-    [[nodiscard]] const std::unordered_map<std::string, int>& getSpecialTokenMappings() const { return special_token_mappings_; }
+    [[nodiscard]] const tt_stl::unordered_map<tt_stl::string, int>& getSpecialTokenMappings() const { return special_token_mappings_; }
 };
+}

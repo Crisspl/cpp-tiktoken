@@ -23,18 +23,21 @@
 #include <string>
 #include <algorithm>
 
+namespace tiktoken
+{
+
 BytePairEncodingCore::BytePairEncodingCore(bpe_encoding_t&& byte_pair_ranks,
-    std::unordered_map<std::string, int>&& special_token_mappings,
+    tt_stl::unordered_map<tt_stl::string, int>&& special_token_mappings,
     PCRERegex&& pattern_string) :
     byte_pair_ranks_(std::move(byte_pair_ranks)),
     special_token_mappings_(std::move(special_token_mappings)),
     pattern_string_(std::move(pattern_string)) { }
 
-std::vector<int> BytePairEncodingCore::byte_pair_merge(const std::vector<uint8_t> &piece,
+tt_stl::vector<int> BytePairEncodingCore::byte_pair_merge(const tt_stl::vector<uint8_t> &piece,
     const bpe_encoding_t &ranks,
     const std::function<int(int, int)> &f)
 {
-    std::vector<std::pair<int, int>> partitions(piece.size() + 1);
+    tt_stl::vector<std::pair<int, int>> partitions(piece.size() + 1);
     for (size_t i = 0; i <= piece.size(); ++i) {
         partitions[i] = { static_cast<int>(i), std::numeric_limits<int>::max() };
     }
@@ -42,7 +45,7 @@ std::vector<int> BytePairEncodingCore::byte_pair_merge(const std::vector<uint8_t
         if (idx + skip + 2 >= partitions.size()) {
             return std::nullopt;
         }
-        std::vector<uint8_t> key(piece.begin() + partitions[idx].first, piece.begin() + partitions[idx + skip + 2].first);
+        tt_stl::vector<uint8_t> key(piece.begin() + partitions[idx].first, piece.begin() + partitions[idx + skip + 2].first);
         auto rank_iter = ranks.find(key);
         return (rank_iter != ranks.end()) ? std::optional<int>(rank_iter->second) : std::nullopt;
     };
@@ -72,7 +75,7 @@ std::vector<int> BytePairEncodingCore::byte_pair_merge(const std::vector<uint8_t
             break;
         }
     }
-    std::vector<int> output;
+    tt_stl::vector<int> output;
     output.reserve(partitions.size() - 1);
     for (size_t i = 0; i < partitions.size() - 1; ++i) {
         output.push_back(f(partitions[i].first, partitions[i + 1].first));
@@ -81,12 +84,12 @@ std::vector<int> BytePairEncodingCore::byte_pair_merge(const std::vector<uint8_t
 }
 
 
-std::vector<std::string> BytePairEncodingCore::break_into_specials(std::string const& line_to_encode, const std::unordered_set<std::string> &allowed_special) {
-    std::vector<std::pair<size_t, size_t>> separator_offsets;
-    std::string::size_type pos = 0;
+tt_stl::vector<tt_stl::string> BytePairEncodingCore::break_into_specials(tt_stl::string const& line_to_encode, const tt_stl::unordered_set<tt_stl::string> &allowed_special) {
+    tt_stl::vector<std::pair<size_t, size_t>> separator_offsets;
+    tt_stl::string::size_type pos = 0;
     for (auto& sep: special_token_mappings_) {
         if (!sep.first.empty()) {
-            while ((pos = line_to_encode.find(sep.first, pos)) != std::string::npos) {
+            while ((pos = line_to_encode.find(sep.first, pos)) != tt_stl::string::npos) {
                 separator_offsets.push_back({ pos, pos + sep.first.size() });
                 pos += sep.first.size();
             }
@@ -96,7 +99,7 @@ std::vector<std::string> BytePairEncodingCore::break_into_specials(std::string c
         }
     }
     std::sort(separator_offsets.begin(), separator_offsets.end());
-    std::vector<std::string> lines;
+    tt_stl::vector<tt_stl::string> lines;
     for (auto [begin, end]: separator_offsets) {
         lines.push_back(line_to_encode.substr(pos, begin - pos));
         lines.push_back(line_to_encode.substr(begin, end - begin));
@@ -106,11 +109,11 @@ std::vector<std::string> BytePairEncodingCore::break_into_specials(std::string c
     return lines;
 }
 
-std::pair<std::vector<int>, std::vector<int>> BytePairEncodingCore::encode_native(const std::string &line_to_encode,
-    const std::unordered_set<std::string> &allowed_special)
+std::pair<tt_stl::vector<int>, tt_stl::vector<int>> BytePairEncodingCore::encode_native(const tt_stl::string &line_to_encode,
+    const tt_stl::unordered_set<tt_stl::string> &allowed_special)
 {
-    std::vector<int> tokens;
-    std::vector<int> segment_ids;
+    tt_stl::vector<int> tokens;
+    tt_stl::vector<int> segment_ids;
     auto lines = break_into_specials(line_to_encode, allowed_special);
     for(auto line:lines) {
         auto special_mapping = special_token_mappings_.find(line);
@@ -127,7 +130,7 @@ std::pair<std::vector<int>, std::vector<int>> BytePairEncodingCore::encode_nativ
                         segment_ids.push_back(0);
                     }
                 } else {
-                    std::vector<uint8_t> utf8_encoded(token.begin(), token.end());
+                    tt_stl::vector<uint8_t> utf8_encoded(token.begin(), token.end());
                     if (utf8_encoded.size() == 1) {
                         auto rank_iter = byte_pair_ranks_.find(utf8_encoded);
                         if (rank_iter != byte_pair_ranks_.end()) {
@@ -136,7 +139,7 @@ std::pair<std::vector<int>, std::vector<int>> BytePairEncodingCore::encode_nativ
                         }
                     } else {
                         auto byte_pairs = byte_pair_merge(utf8_encoded, byte_pair_ranks_, [&](int start, int end) {
-                            std::vector<uint8_t> key(utf8_encoded.begin() + start, utf8_encoded.begin() + end);
+                            tt_stl::vector<uint8_t> key(utf8_encoded.begin() + start, utf8_encoded.begin() + end);
                             return byte_pair_ranks_[key];
                         });
                         tokens.insert(tokens.end(), byte_pairs.begin(), byte_pairs.end());
@@ -149,22 +152,24 @@ std::pair<std::vector<int>, std::vector<int>> BytePairEncodingCore::encode_nativ
     return std::make_pair(tokens, segment_ids);
 }
 
-std::string BytePairEncodingCore::decode_native(const std::vector<int> &input_tokens_to_decode)
+tt_stl::string BytePairEncodingCore::decode_native(const tt_stl::vector<int> &input_tokens_to_decode)
 {
-    std::stringstream decoded_string;
+    tt_stl::string decoded_string;
     for (const int token_id: input_tokens_to_decode) {
         auto special_token = std::find_if(special_token_mappings_.begin(), special_token_mappings_.end(),
             [token_id](const auto &pair) { return pair.second == token_id; });
         if (special_token != special_token_mappings_.end()) {
-            decoded_string << special_token->first;
+            decoded_string += special_token->first;
         } else {
             for (const auto &byte_pair: byte_pair_ranks_) {
                 if (byte_pair.second == token_id) {
-                    decoded_string << std::string(byte_pair.first.begin(), byte_pair.first.end());
+                    decoded_string += tt_stl::string(byte_pair.first.begin(), byte_pair.first.end());
                     break;
                 }
             }
         }
     }
-    return decoded_string.str();
+    return decoded_string;
+}
+
 }

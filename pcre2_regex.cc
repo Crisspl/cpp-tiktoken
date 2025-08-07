@@ -23,6 +23,9 @@
 #define PCRE2_CODE_UNIT_WIDTH 0
 #include <pcre2.h>
 
+namespace tiktoken
+{
+
 namespace impl
 {
     using state_t = void*;
@@ -32,7 +35,7 @@ namespace impl
         return reinterpret_cast<pcre2_code_8 *>(state);
     }
 
-    state_t state_create(const std::string &pattern, int flags)
+    state_t state_create(const tt_stl::string &pattern, int flags)
     {
         int error = 0;
         PCRE2_SIZE error_offset = 0;
@@ -40,8 +43,8 @@ namespace impl
         pcre2_code_8* const regex = pcre2_compile_8(reinterpret_cast<PCRE2_SPTR8>(pattern.c_str()), pattern.size(),
             static_cast<uint32_t>(flags), &error, &error_offset, nullptr);
         if (!regex) {
-            char buffer[512];
 #if TIKTOKEN_EXCEPTIONS_ENABLE
+            char buffer[512];
             pcre2_get_error_message_8(error, reinterpret_cast<PCRE2_UCHAR8 *>(buffer), sizeof(buffer));
             throw std::runtime_error(buffer);
 #else
@@ -59,10 +62,10 @@ namespace impl
         }
     }
 
-    std::vector<std::pair<std::string::size_type, std::string::size_type>>
-    all_matches(state_t state, const std::string &text) 
+    tt_stl::vector<std::pair<tt_stl::string::size_type, tt_stl::string::size_type>>
+    all_matches(state_t state, const tt_stl::string &text) 
     {
-        std::vector<std::pair<std::string::size_type, std::string::size_type>> result;
+        tt_stl::vector<std::pair<tt_stl::string::size_type, tt_stl::string::size_type>> result;
         auto text_ptr = reinterpret_cast<PCRE2_SPTR8>(text.c_str());
         PCRE2_SIZE text_length = text.size();
         pcre2_match_data_8 *match_data = pcre2_match_data_create_from_pattern_8(state_get_regex(state), nullptr);
@@ -82,9 +85,9 @@ namespace impl
         return result;
     }
 
-    std::vector<std::string> get_all_matches(state_t state, const std::string &text) 
+    tt_stl::vector<tt_stl::string> get_all_matches(state_t state, const tt_stl::string &text) 
     {
-        std::vector<std::string> matches;
+        tt_stl::vector<tt_stl::string> matches;
         auto pairs = all_matches(state, text);
         for(auto &x:pairs) {
             matches.emplace_back(text.substr(x.first, x.second));
@@ -92,15 +95,15 @@ namespace impl
         return matches;
     }
 
-    bool contains(state_t state, const std::string &text) 
+    bool contains(state_t state, const tt_stl::string &text) 
     {
         return !all_matches(state, text).empty();
     }
 
-    void replace_all(state_t state, std::string &text, const std::string &replacement) 
+    void replace_all(state_t state, tt_stl::string &text, const tt_stl::string &replacement) 
     {
-        std::string result;
-        std::string::size_type last = 0;
+        tt_stl::string result;
+        tt_stl::string::size_type last = 0;
         auto pairs = all_matches(state, text);
         for(auto &x:pairs) {
             result.append(text.substr(last, x.first - last));
@@ -112,7 +115,7 @@ namespace impl
     }
 }
 
-PCRERegex::PCRERegex(const std::string &pattern, int flags)
+PCRERegex::PCRERegex(const tt_stl::string &pattern, int flags)
     : impl_state_(impl::state_create(pattern, flags))
 {
 }
@@ -135,22 +138,24 @@ PCRERegex::~PCRERegex()
 }
 
 
-std::vector<std::string> PCRERegex::get_all_matches(const std::string &text) const 
+tt_stl::vector<tt_stl::string> PCRERegex::get_all_matches(const tt_stl::string &text) const 
 {
     return impl::get_all_matches(impl_state_, text);
 }
 
-void PCRERegex::replace_all(std::string &text, const std::string &replacement) const
+void PCRERegex::replace_all(tt_stl::string &text, const tt_stl::string &replacement) const
 {
     impl::replace_all(impl_state_, text, replacement);
 }
 
-bool PCRERegex::contains(const std::string& text) const 
+bool PCRERegex::contains(const tt_stl::string& text) const 
 {
     return impl::contains(impl_state_, text);
 }
 
-std::vector<std::pair<std::string::size_type, std::string::size_type>> PCRERegex::all_matches(const std::string &text) const
+tt_stl::vector<std::pair<tt_stl::string::size_type, tt_stl::string::size_type>> PCRERegex::all_matches(const tt_stl::string &text) const
 {
     return impl::all_matches(impl_state_, text);
+}
+
 }

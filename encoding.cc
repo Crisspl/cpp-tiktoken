@@ -23,8 +23,11 @@
 #define PCRE2_CODE_UNIT_WIDTH 0
 #include <pcre2.h>
 
-GptEncoding::GptEncoding(std::string&& pattern_string, bpe_encoding_t&& byte_pair_ranks,
-    std::unordered_map<std::string, int>&& special_token_mappings, int explicit_n_vocab) :
+namespace tiktoken
+{
+
+GptEncoding::GptEncoding(tt_stl::string&& pattern_string, bpe_encoding_t&& byte_pair_ranks,
+    tt_stl::unordered_map<tt_stl::string, int>&& special_token_mappings, int explicit_n_vocab) :
     n_words(explicit_n_vocab),
     byte_pair_encoding_core_processor_(std::move(byte_pair_ranks), std::move(special_token_mappings),
         PCRERegex(pattern_string, PCRE2_CASELESS)) { }
@@ -40,8 +43,8 @@ GptEncoding GptEncoding::get_encoding_llama3(ModelParams &&params)
     const int num_reserved_special_tokens = 256;
     const int num_base_tokens = (int) params.mergeable_ranks.size();
 
-    std::unordered_map<std::string, int> special_llama3_token_mappings;
-    std::vector<std::string> list_special_tokens = { "<|begin_of_text|>",
+    tt_stl::unordered_map<tt_stl::string, int> special_llama3_token_mappings;
+    tt_stl::vector<tt_stl::string> list_special_tokens = { "<|begin_of_text|>",
         "<|end_of_text|>",
         "<|reserved_special_token_0|>",
         "<|reserved_special_token_1|>",
@@ -52,7 +55,7 @@ GptEncoding GptEncoding::get_encoding_llama3(ModelParams &&params)
         "<|reserved_special_token_4|>",
         "<|eot_id|>" };
     for (int i = 5; i < num_reserved_special_tokens - 5; i++) {
-        list_special_tokens.push_back("<|reserved_special_token_" + std::to_string(i) + "|>");
+        list_special_tokens.push_back("<|reserved_special_token_" + tt_stl::to_string(i) + "|>");
     }
     for (int i = 0; i < list_special_tokens.size(); i++) {
         special_llama3_token_mappings.insert({ list_special_tokens[i], num_base_tokens + i });
@@ -67,8 +70,8 @@ GptEncoding GptEncoding::get_encoding_llama3_1(ModelParams &&params)
     const int num_reserved_special_tokens = 256;
     const int num_base_tokens = (int) params.mergeable_ranks.size();
 
-    std::unordered_map<std::string, int> special_llama3_token_mappings;
-    std::vector<std::string> list_special_tokens = { "<|begin_of_text|>",
+    tt_stl::unordered_map<tt_stl::string, int> special_llama3_token_mappings;
+    tt_stl::vector<tt_stl::string> list_special_tokens = { "<|begin_of_text|>",
         "<|end_of_text|>",
         "<|reserved_special_token_0|>",
         "<|reserved_special_token_1|>",
@@ -80,7 +83,7 @@ GptEncoding GptEncoding::get_encoding_llama3_1(ModelParams &&params)
         "<|eot_id|>",
         "<|python_tag|>" };
     for (int i = 5; i < num_reserved_special_tokens - 3; i++) {
-        list_special_tokens.push_back("<|reserved_special_token_" + std::to_string(i) + "|>");
+        list_special_tokens.push_back("<|reserved_special_token_" + tt_stl::to_string(i) + "|>");
     }
     for (int i = 0; i < list_special_tokens.size(); i++) {
         special_llama3_token_mappings.insert({ list_special_tokens[i], num_base_tokens + i });
@@ -115,13 +118,13 @@ GptEncoding GptEncoding::get_encoding_llama3_1(LanguageModel model, IResourceRea
     return get_encoding_llama3_1(std::move(model_params));
 }
 
-std::vector<int> GptEncoding::encode(const std::string &line_to_encode, const std::unordered_set<std::string> &allowed_special,
-    const std::unordered_set<std::string> &disallowed_special)
+tt_stl::vector<int> GptEncoding::encode(const tt_stl::string &line_to_encode, const tt_stl::unordered_set<tt_stl::string> &allowed_special,
+    const tt_stl::unordered_set<tt_stl::string> &disallowed_special)
 {
     // Check for disallowed special tokens
     if (disallowed_special.count("all") > 0) {
         for (const auto &special_token: byte_pair_encoding_core_processor_.getSpecialTokenMappings()) {
-            if (line_to_encode.find(special_token.first) != std::string::npos) {
+            if (line_to_encode.find(special_token.first) != tt_stl::string::npos) {
 #if TIKTOKEN_EXCEPTIONS_ENABLE
                 throw std::invalid_argument("Disallowed special token found: " + special_token.first);
 #else
@@ -134,7 +137,7 @@ std::vector<int> GptEncoding::encode(const std::string &line_to_encode, const st
     return byte_pair_encoding_core_processor_.encode_native(line_to_encode, allowed_special).first;
 }
 
-std::string GptEncoding::decode(const std::vector<int> &input_tokens_to_decode)
+tt_stl::string GptEncoding::decode(const tt_stl::vector<int> &input_tokens_to_decode)
 {
     // Call the decode_native function from the BytePairEncodingCore class
     return byte_pair_encoding_core_processor_.decode_native(input_tokens_to_decode);
@@ -143,4 +146,6 @@ std::string GptEncoding::decode(const std::vector<int> &input_tokens_to_decode)
 const bpe_encoding_t &GptEncoding::get_byte_pair_token_map() const
 {
     return byte_pair_encoding_core_processor_.getBytePairRanks();
+}
+
 }

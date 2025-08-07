@@ -19,6 +19,8 @@
 #include "embedded_resource_reader.h"
 #include <stdexcept>
 
+namespace tiktoken
+{
 // ModelParams constructor and member functions
 
 ModelParams::ModelParams() :
@@ -26,9 +28,9 @@ ModelParams::ModelParams() :
 {
 }
 
-ModelParams::ModelParams(int explicit_n_vocab, std::string &&pat_str,
+ModelParams::ModelParams(int explicit_n_vocab, tt_stl::string &&pat_str,
     bpe_encoding_t&& mergeable_ranks,
-    std::unordered_map<std::string, int>&& special_tokens) :
+    tt_stl::unordered_map<tt_stl::string, int>&& special_tokens) :
     explicit_n_vocab(explicit_n_vocab),
     pat_str(std::move(pat_str)), mergeable_ranks(std::move(mergeable_ranks)), special_tokens(std::move(special_tokens))
 {
@@ -110,7 +112,7 @@ ModelParams ModelParamsGenerator::p50k_edit(const char *resource_name, IResource
 
     EmbeddedResourceLoader loader(resource_name, resource_reader);
 
-    std::unordered_map<std::string, int> specialTokens = { { EndOfText, 50256 }, { FimPrefix, 50281 }, { FimMiddle, 50282 },
+    tt_stl::unordered_map<tt_stl::string, int> specialTokens = { { EndOfText, 50256 }, { FimPrefix, 50281 }, { FimMiddle, 50282 },
         { FimSuffix, 50283 } };
 
     return ModelParams(0, 
@@ -125,7 +127,7 @@ ModelParams ModelParamsGenerator::cl100k_base(const char *resource_name, IResour
 
     EmbeddedResourceLoader loader(resource_name, resource_reader);
 
-    std::unordered_map<std::string, int> specialTokens = { { EndOfText, 100257 }, { FimPrefix, 100258 }, { FimMiddle, 100259 },
+    tt_stl::unordered_map<tt_stl::string, int> specialTokens = { { EndOfText, 100257 }, { FimPrefix, 100258 }, { FimMiddle, 100259 },
         { FimSuffix, 100260 }, { EndOfPrompt, 100276 } };
 
     return ModelParams(0, 
@@ -140,10 +142,12 @@ ModelParams ModelParamsGenerator::o200k_base(const char *resource_name, IResourc
 
     EmbeddedResourceLoader loader(resource_name, resource_reader);
 
-    std::unordered_map<std::string, int> specialTokens = { { EndOfText, 199999 }, { EndOfPrompt, 200018 } };
+    tt_stl::unordered_map<tt_stl::string, int> specialTokens = { { EndOfText, 199999 }, { EndOfPrompt, 200018 } };
 
     return ModelParams(0, 
         o200k_pattern, 
         loader.loadTokenBytePairEncoding(), 
         std::move(specialTokens));
+}
+
 }

@@ -23,17 +23,20 @@
 #include <unordered_map>
 #include <vector>
 
+namespace tiktoken
+{
+
 class ModelParams {
 public:
     ModelParams();
-    ModelParams(int explicit_n_vocab, std::string&& pat_str,
+    ModelParams(int explicit_n_vocab, tt_stl::string&& pat_str,
         bpe_encoding_t&& mergeable_ranks,
-        std::unordered_map<std::string, int>&& special_tokens);
+        tt_stl::unordered_map<tt_stl::string, int>&& special_tokens);
 
     int explicit_n_vocab;
-    std::string pat_str;
+    tt_stl::string pat_str;
     bpe_encoding_t mergeable_ranks;
-    std::unordered_map<std::string, int> special_tokens;
+    tt_stl::unordered_map<tt_stl::string, int> special_tokens;
 };
 
 enum class LanguageModel {
@@ -64,3 +67,5 @@ private:
     static ModelParams cl100k_base(const char *resource_name = nullptr, IResourceReader *resource_reader = nullptr);
     static ModelParams o200k_base(const char *resource_name = nullptr, IResourceReader *resource_reader = nullptr);
 };
+
+}

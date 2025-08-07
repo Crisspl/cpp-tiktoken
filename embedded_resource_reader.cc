@@ -18,12 +18,12 @@
 #include "embedded_resource_reader.h"
 #include "encoding_utils.h"
 
-#include <filesystem>
-#include <fstream>
-#include <sstream>
+#include <cstdlib>
 #include <stdexcept>
 
 #ifndef TIKTOKEN_EMBEDDED_RESOURCES
+#include <filesystem>
+#include <fstream>
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -39,6 +39,9 @@ extern std::pair<const unsigned char *, size_t> get_resource_p50k_base();
 extern std::pair<const unsigned char *, size_t> get_resource_r50k_base();
 #endif
 
+namespace tiktoken
+{
+
 namespace 
 {
 #ifndef TIKTOKEN_EMBEDDED_RESOURCES
@@ -51,7 +54,7 @@ namespace
 #else
         char result[PATH_MAX];
         ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-        path = std::filesystem::path(std::string(result, count > 0 ? count : 0));
+        path = std::filesystem::path(tt_stl::string(result, count > 0 ? count : 0));
 #endif
         return path.parent_path();
     }
@@ -61,10 +64,10 @@ namespace
 
     class EmbeddedResourceReader: public IResourceReader {
     public:
-        std::vector<std::string> readLines(std::string_view resourceName) override;
+        tt_stl::vector<tt_stl::string> readLines(std::string_view resourceName) override;
     };
 
-    std::vector<std::string> EmbeddedResourceReader::readLines(std::string_view resourceName)
+    tt_stl::vector<tt_stl::string> EmbeddedResourceReader::readLines(std::string_view resourceName)
     {
 #ifndef TIKTOKEN_EMBEDDED_RESOURCES
         std::filesystem::path resource_path = g_exe_parent_path / "tokenizers" / resourceName;
@@ -77,9 +80,9 @@ namespace
 #endif
         }
 
-        std::string line;
-        std::vector<std::string> lines;
-        while (std::getline(file, line)) {
+        tt_stl::string line;
+        tt_stl::vector<tt_stl::string> lines;
+        while (tt_stl::getline(file, line)) {
             lines.push_back(line);
         }
 
@@ -96,9 +99,9 @@ namespace
             membuf sbuf(const_cast<char *>((const char*) mem.first), (ptrdiff_t) mem.second);
             std::istream file(&sbuf);
 
-            std::string line;
-            std::vector<std::string> lines;
-            while (std::getline(file, line))
+            tt_stl::string line;
+            tt_stl::vector<tt_stl::string> lines;
+            while (tt_stl::getline(file, line))
                 lines.push_back(line);
 
             return lines;
@@ -123,7 +126,7 @@ namespace
         else
         {
 #if TIKTOKEN_EXCEPTIONS_ENABLE
-            throw std::runtime_error("Embedded resource '" + (std::string) resourceName + "' not found.");
+            throw std::runtime_error("Embedded resource '" + (tt_stl::string) resourceName + "' not found.");
 #else
             return {};
 #endif
@@ -133,13 +136,13 @@ namespace
     }
 }
 
-EmbeddedResourceLoader::EmbeddedResourceLoader(const std::string& dataSourceName, IResourceReader* reader)
+EmbeddedResourceLoader::EmbeddedResourceLoader(const tt_stl::string& dataSourceName, IResourceReader* reader)
     : resourceReader_(reader)
     , dataSourceName_(dataSourceName)
 {
 }
 
-std::vector<std::string> EmbeddedResourceLoader::readEmbeddedResourceAsLines() {
+tt_stl::vector<tt_stl::string> EmbeddedResourceLoader::readEmbeddedResourceAsLines() {
     if (!!resourceReader_) {
         return resourceReader_->readLines(dataSourceName_);
     }
@@ -154,17 +157,18 @@ EmbeddedResourceLoader::loadTokenBytePairEncoding()
 
     for (const auto &line: lines) {
         if (!line.empty()) {
-            std::istringstream iss(line);
+            const char* whitespace_chars = " \f\n\r\t\v";
 
-            std::string base64_string;
-            int rank;
+            const size_t b64str_end_offset = line.find_first_of(whitespace_chars);
+            const size_t rank_offset = line.find_first_not_of(whitespace_chars, b64str_end_offset);
 
-            iss >> base64_string >> rank;
-
-            auto decoded = base64::decode(base64_string);
+            const auto decoded = base64::decode(std::string_view(line.c_str(), b64str_end_offset));
+            const int rank = std::strtol(line.c_str() + rank_offset, nullptr, 10);
             token_byte_pair_encoding.insert({std::move(decoded), rank});
         }
     }
 
     return token_byte_pair_encoding;
+}
+
 }

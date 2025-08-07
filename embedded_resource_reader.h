@@ -22,23 +22,28 @@
 #include <unordered_map>
 #include <vector>
 
+namespace tiktoken
+{
+
 class IResourceReader {
 public:
-    virtual std::vector<std::string> readLines(std::string_view resourceName) = 0;
+    virtual tt_stl::vector<tt_stl::string> readLines(std::string_view resourceName) = 0;
 };
 
 class EmbeddedResourceLoader {
 public:
     explicit EmbeddedResourceLoader(
-        const std::string& dataSourceName,
+        const tt_stl::string& dataSourceName,
         IResourceReader* reader = nullptr
     );
     
     bpe_encoding_t loadTokenBytePairEncoding();
 
 private:
-    std::vector<std::string> readEmbeddedResourceAsLines();
+    tt_stl::vector<tt_stl::string> readEmbeddedResourceAsLines();
 
     IResourceReader* resourceReader_;
-    std::string dataSourceName_;
+    tt_stl::string dataSourceName_;
 };
+
+}

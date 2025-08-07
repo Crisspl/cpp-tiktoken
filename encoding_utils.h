@@ -22,19 +22,14 @@
 #include <string>
 #include <vector>
 
-struct VectorHash {
-    template<typename T>
-    std::size_t operator()(const std::vector<T> &v) const
-    {
-        std::hash<T> hasher;
-        std::size_t seed = 0;
-        for (const auto &elem: v) {
-            seed ^= hasher(elem) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        }
-        return seed;
-    }
-};
+#include "common.h"
 
-namespace base64 {
-std::vector<uint8_t> decode(const std::string &input);
+namespace tiktoken
+{
+
+namespace base64 
+{
+tt_stl::vector<uint8_t> decode(std::string_view input);
+}
+
 }

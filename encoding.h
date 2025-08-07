@@ -24,14 +24,17 @@
 #include <unordered_set>
 #include <vector>
 
+namespace tiktoken
+{
+
 class IResourceReader;
 
 class GptEncoding {
     int n_words;
     BytePairEncodingCore byte_pair_encoding_core_processor_;
 
-    GptEncoding(std::string&& pattern_string, bpe_encoding_t&& byte_pair_ranks,
-        std::unordered_map<std::string, int>&& special_token_mappings, int explicit_n_vocab);
+    GptEncoding(tt_stl::string&& pattern_string, bpe_encoding_t&& byte_pair_ranks,
+        tt_stl::unordered_map<tt_stl::string, int>&& special_token_mappings, int explicit_n_vocab);
 
     GptEncoding(const GptEncoding&) = delete;
     GptEncoding &operator=(const GptEncoding&) = delete;
@@ -44,9 +47,11 @@ public:
     static GptEncoding get_encoding(LanguageModel model, IResourceReader *resource_reader = nullptr, const char *resource_name = nullptr);
     static GptEncoding get_encoding_llama3(LanguageModel model, IResourceReader *resource_reader = nullptr, const char *resource_name = nullptr);
     static GptEncoding get_encoding_llama3_1(LanguageModel model, IResourceReader *resource_reader = nullptr, const char *resource_name = nullptr);
-    std::vector<int> encode(const std::string &line_to_encode, const std::unordered_set<std::string> &allowed_special = {},
-        const std::unordered_set<std::string> &disallowed_special = { "all" });
-    std::string decode(const std::vector<int> &input_tokens_to_decode);
+    tt_stl::vector<int> encode(const tt_stl::string &line_to_encode, const tt_stl::unordered_set<tt_stl::string> &allowed_special = {},
+        const tt_stl::unordered_set<tt_stl::string> &disallowed_special = { "all" });
+    tt_stl::string decode(const tt_stl::vector<int> &input_tokens_to_decode);
 
     [[nodiscard]] const bpe_encoding_t& get_byte_pair_token_map() const;
 };
+
+}

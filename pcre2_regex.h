@@ -22,21 +22,26 @@
 #include <string>
 #include <vector>
 
+namespace tiktoken
+{
+
 class PCRERegex {
     class Impl;
 public:
-    explicit PCRERegex(const std::string &pattern, int flags = 0);
+    explicit PCRERegex(const tt_stl::string &pattern, int flags = 0);
     PCRERegex(PCRERegex&&);
     PCRERegex& operator=(PCRERegex&&);
     PCRERegex& operator=(const PCRERegex&) = delete;
     PCRERegex(const PCRERegex &) = delete;
     ~PCRERegex();
 
-    [[nodiscard]] std::vector<std::string> get_all_matches(const std::string &text) const;
-    void replace_all(std::string &text, const std::string &replacement) const;
-    [[nodiscard]] bool contains(const std::string& text) const;
-    [[nodiscard]] std::vector<std::pair<std::string::size_type, std::string::size_type>> all_matches(const std::string &text) const;
+    [[nodiscard]] tt_stl::vector<tt_stl::string> get_all_matches(const tt_stl::string &text) const;
+    void replace_all(tt_stl::string &text, const tt_stl::string &replacement) const;
+    [[nodiscard]] bool contains(const tt_stl::string& text) const;
+    [[nodiscard]] tt_stl::vector<std::pair<tt_stl::string::size_type, tt_stl::string::size_type>> all_matches(const tt_stl::string &text) const;
 
 private:
     void* impl_state_;
 };
+
+}

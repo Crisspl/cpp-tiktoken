@@ -17,9 +17,13 @@
  */
 #include "encoding_utils.h"
 
-static std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                  "abcdefghijklmnopqrstuvwxyz"
-                                  "0123456789+/";
+namespace tiktoken
+{
+
+static tt_stl::string base64_chars = 
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+"abcdefghijklmnopqrstuvwxyz"
+"0123456789+/";
 
 namespace base64 {
 static auto constexpr fillchar = '=';
@@ -29,13 +33,13 @@ static constexpr std::string_view cvt =
 "abcdefghijklmnopqrstuvwxyz"
 "0123456789+/";
 
-std::vector<uint8_t> decode(const std::string &data)
+tt_stl::vector<uint8_t> decode(std::string_view data)
 {
-    std::string::size_type i;
+    tt_stl::string::size_type i;
     char c;
     char c1;
-    std::string::size_type len = data.length();
-    std::vector<uint8_t> ret;
+    tt_stl::string::size_type len = data.length();
+    tt_stl::vector<uint8_t> ret;
 
     for (i = 0; i < len; ++i) {
         c = (char)cvt.find(data[i]);
@@ -66,3 +70,5 @@ std::vector<uint8_t> decode(const std::string &data)
 }
 
 } // namespace base64
+
+}

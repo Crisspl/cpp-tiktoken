@@ -5,19 +5,20 @@
 
 #include <fstream>
 
-class TFilePathResourceReader : public IResourceReader {
+class TFilePathResourceReader : public tiktoken::IResourceReader {
 public:
-    std::vector<std::string> readLines(std::string_view resourceName) override
+    tiktoken::tt_stl::vector<tiktoken::tt_stl::string> readLines(std::string_view resourceName) override
     {
-        const std::string path = std::string("../tokenizers/") + (std::string) resourceName;
-        std::ifstream file(path);
+        const tiktoken::tt_stl::string path = tiktoken::tt_stl::string("../tokenizers/") + (tiktoken::tt_stl::string) resourceName;
+        std::ifstream file(path.c_str());
         if (!file.is_open()) {
-            throw std::runtime_error(std::string("Embedded resource '") + path + "' not found.");
+            //throw std::runtime_error(tiktoken::tt_stl::string("Embedded resource '") + path + "' not found.");
+            return {};
         }
 
-        std::string line;
-        std::vector<std::string> lines;
-        while (std::getline(file, line)) {
+        tiktoken::tt_stl::string line;
+        tiktoken::tt_stl::vector<tiktoken::tt_stl::string> lines;
+        while (getline(file, line)) {
             lines.push_back(line);
         }
 
@@ -27,8 +28,8 @@ public:
 
 TEST(TestGetEncoding, TestDefaultEncod)
 {
-    auto encoder = GptEncoding::get_encoding(LanguageModel::CL100K_BASE);
-    std::vector<int> tokens = encoder.encode("hello world");
+    auto encoder = tiktoken::GptEncoding::get_encoding(tiktoken::LanguageModel::CL100K_BASE);
+    tiktoken::tt_stl::vector<int> tokens = encoder.encode("hello world");
     ASSERT_EQ(tokens.size(), 2);
     ASSERT_EQ(tokens[0], 15339);
     ASSERT_EQ(tokens[1], 1917);
@@ -36,8 +37,8 @@ TEST(TestGetEncoding, TestDefaultEncod)
 
 TEST(TestGetEncoding, TestEncode_O200K_BASE)
 {
-    auto encoder = GptEncoding::get_encoding(LanguageModel::O200K_BASE);
-    std::vector<int> tokens = encoder.encode("hello world");
+    auto encoder = tiktoken::GptEncoding::get_encoding(tiktoken::LanguageModel::O200K_BASE);
+    tiktoken::tt_stl::vector<int> tokens = encoder.encode("hello world");
     ASSERT_EQ(tokens.size(), 2);
     ASSERT_EQ(tokens[0], 24912);
     ASSERT_EQ(tokens[1], 2375);
@@ -46,8 +47,8 @@ TEST(TestGetEncoding, TestEncode_O200K_BASE)
 TEST(TestGetEncoding, TestCustomResourceReader)
 {
     TFilePathResourceReader reader;
-    auto encoder = GptEncoding::get_encoding(LanguageModel::CL100K_BASE, &reader);
-    std::vector<int> tokens = encoder.encode("hello world");
+    auto encoder = tiktoken::GptEncoding::get_encoding(tiktoken::LanguageModel::CL100K_BASE, &reader);
+    tiktoken::tt_stl::vector<int> tokens = encoder.encode("hello world");
     ASSERT_EQ(tokens.size(), 2);
     ASSERT_EQ(tokens[0], 15339);
     ASSERT_EQ(tokens[1], 1917);
@@ -58,8 +59,8 @@ TEST(TestGetEncoding, TestCustomResourceReader)
 TEST(TestGetEncoding, TestLLama3Tokenizer)
 {
     TFilePathResourceReader reader;
-    auto encoder = GptEncoding::get_encoding_llama3(LanguageModel::CL100K_BASE, &reader, "tokenizer.model");
-    std::vector<int> tokens = encoder.encode("This is a test sentence.");
+    auto encoder = tiktoken::GptEncoding::get_encoding_llama3(tiktoken::LanguageModel::CL100K_BASE, &reader, "tokenizer.model");
+    tiktoken::tt_stl::vector<int> tokens = encoder.encode("This is a test sentence.");
     for(int i = 0;i<tokens.size();i++){
         std::cout<< encoder.decode({tokens[i]})<<" ";
     }
@@ -72,11 +73,11 @@ TEST(TestGetEncoding, TestLLama3Tokenizer)
     ASSERT_EQ(tokens[4], 11914);
     ASSERT_EQ(tokens[5], 13);
 
-    std::vector<int> role_user = encoder.encode("user");
-    std::vector<int> role_system = encoder.encode("system");
-    std::vector<int> paragraph = encoder.encode("\n\n");
+    tiktoken::tt_stl::vector<int> role_user = encoder.encode("user");
+    tiktoken::tt_stl::vector<int> role_system = encoder.encode("system");
+    tiktoken::tt_stl::vector<int> paragraph = encoder.encode("\n\n");
 
-    std::string decode_str = encoder.decode({128000, 2028, 374, 264, 1296, 11914, 13, 128001});
+    tiktoken::tt_stl::string decode_str = encoder.decode({128000, 2028, 374, 264, 1296, 11914, 13, 128001});
 
     ASSERT_EQ(role_user[0], 882);
     ASSERT_EQ(role_system[0], 9125);
@@ -88,8 +89,8 @@ TEST(TestGetEncoding, TestLLama3Tokenizer)
 TEST(TestGetEncoding, TestLLama3_1Tokenizer)
 {
     TFilePathResourceReader reader;
-    auto encoder = GptEncoding::get_encoding_llama3_1(LanguageModel::CL100K_BASE, &reader, "tokenizer_llama3.1.model");
-    std::vector<int> tokens = encoder.encode("请你基于以下「评估标准」");
+    auto encoder = tiktoken::GptEncoding::get_encoding_llama3_1(tiktoken::LanguageModel::CL100K_BASE, &reader, "tokenizer_llama3.1.model");
+    tiktoken::tt_stl::vector<int> tokens = encoder.encode("请你基于以下「评估标准」");
     for(int i = 0;i<tokens.size();i++){
         std::cout<< encoder.decode({tokens[i]})<<" ";
     }
@@ -105,11 +106,11 @@ TEST(TestGetEncoding, TestLLama3_1Tokenizer)
     ASSERT_EQ(tokens[7], 110778);
     ASSERT_EQ(tokens[8], 10646);
 
-    std::vector<int> role_user = encoder.encode("user");
-    std::vector<int> role_system = encoder.encode("system");
-    std::vector<int> paragraph = encoder.encode("\n\n");
+    tiktoken::tt_stl::vector<int> role_user = encoder.encode("user");
+    tiktoken::tt_stl::vector<int> role_system = encoder.encode("system");
+    tiktoken::tt_stl::vector<int> paragraph = encoder.encode("\n\n");
 
-    std::string decode_str = encoder.decode({128000, 2028, 374, 264, 1296, 11914, 13, 128001});
+    tiktoken::tt_stl::string decode_str = encoder.decode({128000, 2028, 374, 264, 1296, 11914, 13, 128001});
 
     ASSERT_EQ(role_user[0], 882);
     ASSERT_EQ(role_system[0], 9125);
