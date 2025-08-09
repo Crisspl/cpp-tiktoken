@@ -2,12 +2,13 @@
 
 #define TIKTOKEN_EXCEPTIONS_ENABLE 0
 
-#include <unordered_set>
+#ifndef TIKTOKEN_STL_TYPEDEFS_DEFINED
+#include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
+#endif
 #include <string_view>
-
-#include "SIMDString/SIMDString.h"
 
 namespace tiktoken
 {

@@ -33,7 +33,7 @@ if (CPP_TIKTOKEN_EMBED_RESOURCES)
     add_library(tiktoken_resources_obj OBJECT)
     foreach(RSRC_FILE IN LISTS OPENAPI_RSRC_FILES)
         get_filename_component(RSRC_NAME "${RSRC_FILE}" NAME_WE)
-        tiktoken_embed_resource("${CMAKE_SOURCE_DIR}/${RSRC_FILE}" ${RSRC_NAME} RESOURCE_CPP_FILE)
+        tiktoken_embed_resource("${CMAKE_CURRENT_SOURCE_DIR}/${RSRC_FILE}" ${RSRC_NAME} RESOURCE_CPP_FILE)
         target_sources(tiktoken_resources_obj PRIVATE ${RESOURCE_CPP_FILE})
     endforeach()
 

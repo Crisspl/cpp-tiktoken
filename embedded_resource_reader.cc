@@ -30,6 +30,9 @@
 #include <limits.h>
 #include <unistd.h>
 #endif
+#else
+#include <streambuf>
+#include <istream>
 #endif
 
 #if defined(TIKTOKEN_EMBEDDED_RESOURCES)

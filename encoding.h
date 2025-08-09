@@ -40,6 +40,9 @@ class GptEncoding {
     GptEncoding &operator=(const GptEncoding&) = delete;
 
 public:
+    GptEncoding(GptEncoding &&) = default;
+    GptEncoding &operator=(GptEncoding &&) = default;
+
     static GptEncoding get_encoding(ModelParams&& params);
     static GptEncoding get_encoding_llama3(ModelParams&& params);
     static GptEncoding get_encoding_llama3_1(ModelParams&& params);

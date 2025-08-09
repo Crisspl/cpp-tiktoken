@@ -42,6 +42,9 @@ public:
         tt_stl::unordered_map<tt_stl::string, int>&& special_token_mappings,
         PCRERegex&& pattern_string);
 
+    BytePairEncodingCore(BytePairEncodingCore&&) = default;
+    BytePairEncodingCore& operator=(BytePairEncodingCore&&) = default;
+
     std::pair<tt_stl::vector<int>, tt_stl::vector<int>> encode_native(const tt_stl::string &line_to_encode,
         const tt_stl::unordered_set<tt_stl::string> &allowed_special);
     tt_stl::string decode_native(const tt_stl::vector<int> &input_tokens_to_decode);
